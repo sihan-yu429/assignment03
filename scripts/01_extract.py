@@ -13,9 +13,12 @@
 """
 
 import pathlib
+import urllib.request
+import shutil
 
 
 DATA_DIR = pathlib.Path(__file__).parent.parent / 'data'
+BASE_URL = "https://s3-us-west-1.amazonaws.com/files.airnowtech.org/airnow"
 
 
 def download_data_for_date(date_str):
@@ -28,7 +31,34 @@ def download_data_for_date(date_str):
     Args:
         date_str: Date string in 'YYYY-MM-DD' format. For example, '2024-07-01'.
     """
-    raise NotImplementedError("Implement this function to download AirNow data files.")
+    date_obj = datetime.date.fromisoformat(date_str)
+    yyyy = str(date_obj.year)
+    yyyymmdd = date_obj.strftime("%Y%m%d")
+
+    out_dir = DATA_DIR / "raw" / date_str
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # 24 hourly files
+    for hh in range(24):
+        hh_str = f"{hh:02d}"
+        fname = f"HourlyData_{yyyymmdd}{hh_str}.dat"
+        url = f"{BASE_URL}/{yyyy}/{yyyymmdd}/{fname}"
+        dest = out_dir / fname
+
+        if dest.exists() and dest.stat().st_size > 0:
+            continue
+
+        with urllib.request.urlopen(url) as resp, open(dest, "wb") as f:
+            shutil.copyfileobj(resp, f)
+
+    # site locations file
+    sites_fname = "Monitoring_Site_Locations_V2.dat"
+    sites_url = f"{BASE_URL}/{yyyy}/{yyyymmdd}/{sites_fname}"
+    sites_dest = out_dir / sites_fname
+
+    if not (sites_dest.exists() and sites_dest.stat().st_size > 0):
+        with urllib.request.urlopen(sites_url) as resp, open(sites_dest, "wb") as f:
+            shutil.copyfileobj(resp, f)
 
 
 if __name__ == '__main__':
