@@ -27,3 +27,30 @@
 -- pointing to gs://<your-bucket>/air_quality/hourly/parquet/*
 -- with hive partitioning options
 
+-- Hourly Observations — CSV (hive-partitioned)
+CREATE OR REPLACE EXTERNAL TABLE `air_quality.hourly_observations_csv_hive`
+WITH PARTITION COLUMNS
+OPTIONS (
+  format = 'CSV',
+  skip_leading_rows = 1,
+  uris = ['gs://sihanyu_musa_5090/air_quality/hourly/csv/*'],
+  hive_partition_uri_prefix = 'gs://sihanyu_musa_5090/air_quality/hourly/csv'
+);
+
+-- Hourly Observations — JSON-L (hive-partitioned)
+CREATE OR REPLACE EXTERNAL TABLE `air_quality.hourly_observations_jsonl_hive`
+WITH PARTITION COLUMNS
+OPTIONS (
+  format = 'NEWLINE_DELIMITED_JSON',
+  uris = ['gs://sihanyu_musa_5090/air_quality/hourly/jsonl/*'],
+  hive_partition_uri_prefix = 'gs://sihanyu_musa_5090/air_quality/hourly/jsonl'
+);
+
+-- Hourly Observations — Parquet (hive-partitioned)
+CREATE OR REPLACE EXTERNAL TABLE `air_quality.hourly_observations_parquet_hive`
+WITH PARTITION COLUMNS
+OPTIONS (
+  format = 'PARQUET',
+  uris = ['gs://sihanyu_musa_5090/air_quality/hourly/parquet/*'],
+  hive_partition_uri_prefix = 'gs://sihanyu_musa_5090/air_quality/hourly/parquet'
+);

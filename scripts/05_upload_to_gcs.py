@@ -25,13 +25,13 @@
 """
 
 import pathlib
-
+from google.cloud import storage
 
 DATA_DIR = pathlib.Path(__file__).parent.parent / 'data'
 
 # TODO: Update this to your bucket name
-BUCKET_NAME = 'musa5090-s26-yourname-data'
-
+BUCKET_NAME = 'sihanyu_musa_5090'
+PROJECT_ID = "musa-geocloud-sihan"
 
 def upload_with_hive_partitioning():
     """Upload prepared hourly data to GCS with hive-partitioned folder structure.
@@ -45,7 +45,32 @@ def upload_with_hive_partitioning():
     The site locations files don't need hive partitioning (they're not
     date-partitioned), so you can re-upload them as-is or skip them.
     """
-    raise NotImplementedError("Implement this function to upload with hive partitioning.")
+    client = storage.Client(project=PROJECT_ID)
+    bucket = client.bucket(BUCKET_NAME)
+
+    prepared_hourly = DATA_DIR / 'prepared' / 'hourly'
+
+    for csv_file in sorted(prepared_hourly.glob('*.csv')):
+        date_str = csv_file.stem
+        print(f'Uploading {date_str}...')
+
+        # CSV
+        blob = bucket.blob(f'air_quality/hourly/csv/airnow_date={date_str}/data.csv')
+        blob.upload_from_filename(csv_file)
+
+        # JSONL
+        jsonl_file = prepared_hourly / f'{date_str}.jsonl'
+        if jsonl_file.exists():
+            blob = bucket.blob(f'air_quality/hourly/jsonl/airnow_date={date_str}/data.jsonl')
+            blob.upload_from_filename(jsonl_file)
+
+        # Parquet
+        parquet_file = prepared_hourly / f'{date_str}.parquet'
+        if parquet_file.exists():
+            blob = bucket.blob(f'air_quality/hourly/parquet/airnow_date={date_str}/data.parquet')
+            blob.upload_from_filename(parquet_file)
+
+    print('All hourly files uploaded with hive partitioning.')
 
 
 if __name__ == '__main__':

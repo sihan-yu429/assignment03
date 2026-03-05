@@ -14,12 +14,14 @@
 """
 
 import pathlib
+from google.cloud import storage
 
 
 DATA_DIR = pathlib.Path(__file__).parent.parent / 'data'
 
 # TODO: Update this to your bucket name
-BUCKET_NAME = 'musa5090-s26-yourname-data'
+BUCKET_NAME = 'sihanyu_musa_5090'
+PROJECT_ID = "musa-geocloud-sihan"
 
 
 def upload_prepared_data():
@@ -37,8 +39,25 @@ def upload_prepared_data():
         gs://<bucket>/air_quality/sites/site_locations.jsonl
         gs://<bucket>/air_quality/sites/site_locations.geoparquet
     """
-    raise NotImplementedError("Implement this function to upload files to GCS.")
+    prepared_dir = DATA_DIR / "prepared"
+    if not prepared_dir.exists():
+        raise RuntimeError("data/prepared/ not found. Run scripts/02_prepare.py first.")
 
+    client = storage.Client(project=PROJECT_ID)
+    bucket = client.bucket(BUCKET_NAME)
+
+    for local_path in prepared_dir.rglob("*"):
+        if local_path.is_dir():
+            continue
+
+        # relative path from data/prepared/
+        rel_path = local_path.relative_to(prepared_dir).as_posix()  
+        blob_path = f"air_quality/{rel_path}"                      
+
+        blob = bucket.blob(blob_path)
+        blob.upload_from_filename(str(local_path))
+
+        print(f"Uploaded: gs://{BUCKET_NAME}/{blob_path}")
 
 if __name__ == '__main__':
     upload_prepared_data()
