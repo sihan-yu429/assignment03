@@ -180,10 +180,10 @@ If you implemented the stretch challenge (scripts `06_prepare`, `06_upload_to_gc
 For each person below, which air quality data source (AirNow hourly files, AirNow API, AQS bulk downloads, or AQS API) would you recommend, and why?
 
 **a) A parent who wants a dashboard showing current air quality near their child's school:**
-> [Your answer here]
+> AirNow API. Because the parent needs current, near-real-time air quality information, not a large historical dataset. AirNow is designed for current conditions and public-facing AQI reporting, with hourly observations and real-time information. Since the number of requests for one school dashboard would be small, an API is practical and efficient.
 
 **b) An environmental justice advocate identifying neighborhoods with chronically poor air quality over the past decade:**
-> [Your answer here]
+> AQS bulk downloads. Because the advocate needs large-volume historical data over many years for trend analysis, not real-time updates. By downloading AQS official source for historical bulk files are better suited than an API for downloading and analyzing long time periods at scale.
 
 **c) A school administrator who needs automated morning alerts when AQI exceeds a threshold:**
-> [Your answer here]
+> AirNow API. The school administrator needs real-time AQI data delivered automatically each morning. The AirNow API is the right choice because it provides near-real-time hourly data and supports small, targeted, automated queries. It is ideal for a scheduled script that checks the current AQI and triggers an alert if it exceeds a threshold.
