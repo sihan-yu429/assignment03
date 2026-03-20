@@ -131,32 +131,33 @@ OPTIONS (
 
 | Format  | File Size |
 |---------|-----------|
-| CSV     |           |
-| JSON-L  |           |
-| Parquet |           |
+| CSV     |   18M        |
+| JSON-L  |   42M        |
+| Parquet |   797K        |
 
 **Site locations:**
 
 | Format     | File Size |
 |------------|-----------|
-| CSV        |           |
-| JSON-L     |           |
-| GeoParquet |           |
+| CSV        |   1.0M        |
+| JSON-L     |   2.9M        |
+| GeoParquet |   476k        |
 
 **Analysis:**
-> [Your answer here — which is smallest/largest and why?]
+> JSON-L is the largest format, while GeoParquet/Parquet is the smallest. JSON-L repeats field names on every row, making it highly redundant. CSV avoids this by using a single header row, resulting in a more compact file. Parquet uses binary columnar storage with built-in compression, which dramatically reduces file size, which makes it the smallest format for the hourly data. Similarly, GeoParquet is the smallest for site locations, as it encodes geometry efficiently in binary rather than as plain text coordinates.
 
 ### 2. Format Anatomy
 
-> [Pick two formats and describe their structure. What are the key differences?]
+> CSV is a plain text format with one header row and one record per line, with field values separated by "|" in this case. It is human-readable and can be opened in any text editor. 
+Parquet is a binary columnar storage format that data from the same column is stored together rather than row by row. It is not human-readable, but it embeds the schema (field names and data types) directly in the file, and achieves much better compression than CSV.
 
 ### 3. Choosing Formats for BigQuery
 
-> [Why is Parquet preferred over CSV or JSON-L? Consider performance and cost.]
+> Parquet is preferred because BigQuery charges based on the amount of data scanned. Since Parquet uses columnar storage and built-in compression, files are much smaller than CSV or JSON-L, which directly reduces query cost. As for the performance, the BigQuery engine is also columnr, so it can read the columns needed for a query rather than scanning the entire record as for CSV or JSON-L.
 
 ### 4. Pipeline vs. Warehouse Joins
 
-> [You kept hourly data and site locations as separate tables and joined them in BigQuery. What if you had joined them during the prepare step instead (denormalization)? What are the trade-offs of each approach?]
+> Keeping them as separate tables is more flexible. If needed, the hourly data and site locations can each be queried independently or joined. It also reduces storage since site metadata is not duplicated across every observation row. However, any query that requires location information must perform a join each time, which adds computation overhead. Joining during the prepare step (denormalization) makes queries faster and simpler since coordinates are already embedded in each row, but it significantly increases file size due to repeated site metadata. It also means that if site information changes, the entire prepare step must be re-run to reflect the update.
 
 #### Stretch Challenge (optional)
 
